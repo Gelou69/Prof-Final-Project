@@ -1,0 +1,104 @@
+@import "tailwindcss";
+:root {
+
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+p.text-sm.font-semibold.mb-2 {
+    font-size: 27px;
+}
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+svg.w-6.h-6 {
+    color: black;
+}
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-green-500.hover\:opacity-90 {
+    color: black;
+}
+button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    cursor: pointer;
+    transition: border-color 0.25s;
+    background-color: white;
+}
+button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-gray-800.text-white.hover\:bg-gray-700.mt-2 {
+    color: black;
+}
+button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-red-600.hover\:bg-red-700.text-white.\!mt-4 {
+    color: black;
+}
+svg.w-4.h-4 {
+    color: black;
+}
+button.text-white.bg-yellow-600.hover\:bg-yellow-700.px-3.py-1.rounded-full.text-sm.font-semibold.transition {
+    color: black;
+}
+button.w-full.py-3.px-4.rounded-lg.bg-gray-700.text-white.font-bold.uppercase.hover\:bg-gray-600.transition.duration-150.mt-3 {
+    color: black;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+button.text-sm.font-medium.uppercase.transition.text-white.hover\:text-yellow-500 {
+    color: black;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+.flex.justify-between.items-center.p-4.bg-black.border-b.border-gray-800.flex-shrink-0 {
+    width: 700px;
+}
+button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-red-500.hover\:opacity-90 {
+    color: black;
+}
+svg.w-6.h-6.text-white.hover\:text-yellow-500 {
+    color: white;
+}

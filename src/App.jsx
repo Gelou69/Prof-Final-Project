@@ -401,9 +401,9 @@ return (
       )}
       <div className="p-4">
         <h3 className="text-lg font-bold text-white mb-1">{product.name}</h3>
-        <p className="text-yellow-500 font-semibold text-xl">₱{product.price.toFixed(2)}</p>
+        <p className="text-yellow-500 font-semibold text-xl">₱{product.price.toFixed(2)}</p>  
         <p className="text-sm text-gray-400 mt-1 line-clamp-2">{product.description}</p>
-        
+        <p className="text-sm text-gray-300 mt-1">Color: <span className="font-semibold text-white">{product.color || 'N/A'}</span></p>
         <div className="mt-3">
           <span className="text-xs text-gray-300 font-semibold block mb-1">Select Size: {currentSize}</span>
           <SizeSelector
@@ -527,6 +527,7 @@ return (
                 {/* Name and Size */}
                 <h3 className="text-white font-semibold text-base">{item.products.name}</h3>
                 <p className="text-xs text-gray-400">Size: <span className="text-yellow-500 font-medium">{item.size}</span></p>
+                Color: <span className="text-yellow-500 font-medium">{item.products.color || 'N/A'}</span>
                 {/* Price and Subtotal */}
                 <p className="text-yellow-500 font-bold text-sm">
                     ₱{item.products.price.toFixed(2)} 
@@ -680,7 +681,7 @@ return (
                     total_amount,
                     order_items (
                         quantity,
-                        products ( name, image_path )
+                        products  ( name, image_path, color )
                     )
                 `)
                 .eq('user_id', userId)
@@ -807,204 +808,253 @@ return (
   /**
    * NEW: Checkout Screen Component (Shopee-like Flow)
    */
-  const CheckoutScreen = ({ onNavigate, user, orderSummary, placeOrder }) => {
-      const [profile, setProfile] = useState(null);
-      const [loading, setLoading] = useState(true);
-      // State to manage the single selection. Initialized to the only available method.
-      const [selectedPayment, setSelectedPayment] = useState('COD'); 
-      
-      // Retrieve the items selected for checkout from the orderSummary parameter
-      const itemsToCheckout = orderSummary?.selectedItems || [];
+ // --- ASSUMED UTILITY FUNCTION (Defined outside the component) ---
+// const getPublicProductImageUrl = (imagePath) => {
+//     if (!supabase || !imagePath) return null;
+//     const { data } = supabase.storage.from(PRODUCT_BUCKET_NAME).getPublicUrl(imagePath);
+//     return data?.publicUrl || null;
+// };
+// ----------------------------------------------------------------
 
-      useEffect(() => {
-          fetchProfile();
-      }, [user]);
+// --- ASSUMED UTILITY FUNCTION (Defined outside the component) ---
+// const getPublicProductImageUrl = (imagePath) => {
+//     if (!supabase || !imagePath) return null;
+//     const { data } = supabase.storage.from(PRODUCT_BUCKET_NAME).getPublicUrl(imagePath);
+//     return data?.publicUrl || null;
+// };
+// ----------------------------------------------------------------
 
-      const fetchProfile = async () => {
-          if (!supabase || !user) { setLoading(false); return; }
-          setLoading(true);
-          try {
-              const { data, error } = await supabase
-                  .from('profiles')
-                  .select('full_name, address, phone')
-                  .eq('id', user.id)
-                  .single();
+const CheckoutScreen = ({ onNavigate, user, orderSummary, placeOrder }) => {
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    // State to manage the single selection. Initialized to the only available method.
+    const [selectedPayment, setSelectedPayment] = useState('COD');
+    
+    // Retrieve the items selected for checkout from the orderSummary parameter
+    const itemsToCheckout = orderSummary?.selectedItems || [];
 
-              if (error) throw error;
-              setProfile(data);
-          } catch (error) {
-              console.error("Error fetching profile:", error.message);
-              onNavigate('message', { message: 'Failed to load profile details for checkout.', type: 'error' });
-          } finally {
-              setLoading(false);
-          }
-      };
-      
-      if (loading) {
-          return (
-              <div className="flex flex-col h-full bg-black text-white p-6 items-center justify-center">
-                  <Loader className="w-8 h-8" />
-                  <p className="mt-2 text-gray-400">Loading Checkout...</p>
-              </div>
-          );
-      }
-      
-      const isAddressMissing = !profile || !profile.address;
+    useEffect(() => {
+        fetchProfile();
+    }, [user]);
 
-      return (
-          <div className="flex flex-col h-full bg-black text-white">
-              <div className="p-4 flex items-center bg-gray-900 border-b border-gray-800 flex-shrink-0">
-                  <button onClick={() => onNavigate('cart')} className="text-white hover:text-yellow-500 transition">
-                      <ArrowLeft className="w-6 h-6" />
-                  </button>
-                  <h1 className="text-xl font-bold text-white ml-4">CHECKOUT</h1>
-              </div>
+    const fetchProfile = async () => {
+        if (!supabase || !user) { setLoading(false); return; }
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('full_name, address, phone ')
+                .eq('id', user.id)
+                .single();
 
-              <div className="flex-grow overflow-y-auto p-4 space-y-4">
-                  {/* 1. Shipping Address */}
-                  <div className="bg-gray-800 p-4 rounded-xl shadow-lg border-l-4 border-yellow-500">
-                      <div className="flex justify-between items-center mb-2">
-                          <h2 className="text-lg font-semibold text-white flex items-center">
-                              <MapPin className="w-5 h-5 mr-2 text-yellow-500" /> Shipping Address
-                          </h2>
-                          <button 
-                              onClick={() => onNavigate('profile')}
-                              className="text-xs text-yellow-500 font-semibold hover:text-yellow-400"
-                          >
-                              {isAddressMissing ? 'ADD ADDRESS' : 'CHANGE'}
-                          </button>
-                      </div>
-                      {isAddressMissing ? (
-                          <p className="text-red-400 text-sm">⚠️ Please go to your profile to set a shipping address.</p>
-                      ) : (
-                          <div>
-                              <p className="font-bold text-gray-300">{profile.full_name || 'User'}</p>
-                              <p className="text-sm text-gray-400">{profile.phone}</p>
-                              <p className="text-sm text-gray-300">{profile.address}</p>
-                          </div>
-                      )}
-                  </div>
+            if (error) throw error;
+            setProfile(data);
+        } catch (error) {
+            console.error("Error fetching profile:", error.message);
+            onNavigate('message', { message: 'Failed to load profile details for checkout.', type: 'error' });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    if (loading) {
+        return (
+            <div className="flex flex-col h-full bg-black text-white p-6 items-center justify-center">
+                <Loader className="w-8 h-8" />
+                <p className="mt-2 text-gray-400">Loading Checkout...</p>
+            </div>
+        );
+    }
+    
+    const isAddressMissing = !profile || !profile.address;
 
-                  {/* 2. Order List */}
-                  <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
-                      <h2 className="text-lg font-semibold text-white mb-3">Order Items ({itemsToCheckout.length})</h2>
-                      {itemsToCheckout.map(item => (
-                          <div key={`${item.product_id}-${item.size}`} className="flex justify-between items-center text-sm py-2 border-b border-gray-700 last:border-b-0">
-                              <div className="flex items-center">
-                                  <span className="text-gray-300 truncate max-w-[150px]">{item.products.name}</span>
-                                  <span className="text-xs text-yellow-500 ml-2">({item.size})</span>
-                                  <span className="text-gray-500 ml-2">x{item.quantity}</span>
-                              </div>
-                              <span className="font-semibold text-white">₱{(item.products.price * item.quantity).toFixed(2)}</span>
-                          </div>
-                      ))}
-                  </div>
-
-                  {/* 3. Payment Method */}
-                  <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
-                      <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
-                          <DollarSign className="w-5 h-5 mr-2 text-yellow-500" /> Payment Method
-                      </h2>
-                      <div className="flex flex-col space-y-2">
-                          {/* Option 1: COD (Available) - Note: The name="payment" attribute ensures only one radio button is selected */}
-                          <label 
-                              className={`flex items-center text-sm text-gray-300 p-2 rounded-lg cursor-pointer transition ${
-                                  selectedPayment === 'COD' ? 'bg-yellow-800/50 border border-yellow-500' : 'bg-gray-700 hover:bg-gray-600'
-                              }`}
-                          >
-                              <input
-                                  type="radio"
-                                  name="payment"
-                                  value="COD"
-                                  checked={selectedPayment === 'COD'}
-                                  onChange={() => setSelectedPayment('COD')}
-                                  className="form-radio h-4 w-4 text-yellow-500 bg-gray-600 border-gray-500 focus:ring-yellow-500 transition"
-                              />
-                              <span className="ml-3">Cash on Delivery (COD)</span>
-                              {selectedPayment === 'COD' && <Check className="w-5 h-5 text-yellow-500 ml-auto" />}
-                          </label>
-
-                          {/* Option 2: Card (Unavailable) */}
-                          <label className="flex items-center text-sm text-gray-300 p-2 bg-gray-700 rounded-lg opacity-50 cursor-not-allowed">
-                              <input
-                                  type="radio"
-                                  name="payment"
-                                  value="Card"
-                                  disabled
-                                  checked={selectedPayment === 'Card'} // Should always be false
-                                  onChange={() => setSelectedPayment('Card')} // Won't fire, but included for completeness
-                                  className="form-radio h-4 w-4 text-yellow-500 bg-gray-600 border-gray-500 focus:ring-yellow-500 transition"
-                              />
-                              <span className="ml-3">Credit/Debit Card (Unavailable)</span>
-                          </label>
-                      </div>
-                  </div>
-              </div>
-
-              {/* 4. Order Summary Footer */}
-              <div className="p-4 bg-gray-900 border-t border-gray-800 flex-shrink-0">
-                  <div className="space-y-1 text-sm mb-3">
-                      <div className="flex justify-between text-gray-400"><span>Order Total</span><span>₱{orderSummary.subtotal.toFixed(2)}</span></div>
-                      <div className="flex justify-between text-gray-400"><span>Shipping Fee</span><span>₱{orderSummary.shipping.toFixed(2)}</span></div>
-                      <div className="flex justify-between text-lg pt-2 border-t border-gray-700">
-                          <span className="text-white font-bold">TOTAL PAYMENT</span>
-                          <span className="text-yellow-500 font-bold">₱{orderSummary.total.toFixed(2)}</span>
-                      </div>
-                  </div>
-                  <button
-                      onClick={() => placeOrder(
-                          orderSummary.total, 
-                          profile.address, 
-                          selectedPayment,
-                          itemsToCheckout // Pass the list of selected items
-                      )}
-                      disabled={isAddressMissing || itemsToCheckout.length === 0}
-                      className={`w-full py-3 rounded-lg text-black font-bold uppercase transition duration-150 ${
-                          isAddressMissing || itemsToCheckout.length === 0 ? 'bg-red-600 cursor-not-allowed text-white' : 'bg-yellow-500 hover:bg-yellow-600'
-                      }`}
-                  >
-                      {isAddressMissing ? 'ADDRESS REQUIRED' : 'PLACE ORDER'}
-                  </button>
-              </div>
-          </div>
-      );
-  };
-
-
-  // --- EXISTING SCREENS (with minor updates) ---
-
-  /**
-   * Home Screen Component 
-   */
-  const HomeScreen = ({ onNavigate, cartItemCount, user }) => {
     return (
-          <div className="flex flex-col h-full bg-black text-white">
+        <div className="flex flex-col h-full bg-black text-white">
+            <div className="p-4 flex items-center bg-gray-900 border-b border-gray-800 flex-shrink-0">
+                <button onClick={() => onNavigate('cart')} className="text-white hover:text-yellow-500 transition">
+                    <ArrowLeft className="w-6 h-6" />
+                </button>
+                <h1 className="text-xl font-bold text-white ml-4">CHECKOUT</h1>
+            </div>
+
+            <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                {/* 1. Shipping Address */}
+                <div className="bg-gray-800 p-4 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-lg font-semibold text-white flex items-center">
+                            <MapPin className="w-5 h-5 mr-2 text-yellow-500" /> Shipping Address
+                        </h2>
+                        <button 
+                            onClick={() => onNavigate('profile')}
+                            className="text-xs text-yellow-500 font-semibold hover:text-yellow-400"
+                        >
+                            {isAddressMissing ? 'ADD ADDRESS' : 'CHANGE'}
+                        </button>
+                    </div>
+                    {isAddressMissing ? (
+                        <p className="text-red-400 text-sm">⚠️ Please go to your profile to set a shipping address.</p>
+                    ) : (
+                        <div>
+                            <p className="font-bold text-gray-300">{profile.full_name || 'User'}</p>
+                            <p className="text-sm text-gray-400">{profile.phone}</p>
+                            <p className="text-sm text-gray-300">{profile.address}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* 2. Order List - FIXED SECTION */}
+                <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
+                    <h2 className="text-lg font-semibold text-white mb-3">Order Items ({itemsToCheckout.length})</h2>
+                    {itemsToCheckout.map(item => {
+                        // FIX: Use the correct product image path property and utility function
+                        const imageUrl = getPublicProductImageUrl(item.products?.image_path);
+                        
+                        return (
+                            <div key={`${item.product_id}-${item.size}`} className="flex justify-between items-center text-sm py-2 border-b border-gray-700 last:border-b-0">
+                                <div className="flex items-center space-x-3">
+                                    {/* Product Image - Conditional display with fallback */}
+                                    {imageUrl ? (
+                                        <img
+                                            src={imageUrl}
+                                            alt={item.products.name}
+                                            className="w-12 h-12 object-cover rounded-md border border-gray-700 flex-shrink-0"
+                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x200/555/FFF?text=Image+Missing"; }}
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 bg-gray-700 rounded-md border border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-400 text-xs">
+                                            [No Image]
+                                        </div>
+                                    )}
+
+                                    {/* Product Details */}
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-100 font-medium truncate max-w-[180px]">{item.products.name}</span>
+                                        <div className="flex text-xs text-gray-400">
+                                            <span>Size: <span className="text-yellow-500">{item.size}</span></span>
+                                            {item.products.color && (
+                                                <>
+                                                    <span className="mx-2">•</span>
+                                                    <span>Color: {item.products.color}</span>
+                                                </>
+                                            )}
+                                            <span className="ml-2">x{item.quantity}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span className="font-semibold text-white">₱{(item.products.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* 3. Payment Method */}
+                <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
+                        <DollarSign className="w-5 h-5 mr-2 text-yellow-500" /> Payment Method
+                    </h2>
+                    <div className="flex flex-col space-y-2">
+                        {/* Option 1: COD (Available) - Note: The name="payment" attribute ensures only one radio button is selected */}
+                        <label 
+                            className={`flex items-center text-sm text-gray-300 p-2 rounded-lg cursor-pointer transition ${
+                                selectedPayment === 'COD' ? 'bg-yellow-800/50 border border-yellow-500' : 'bg-gray-700 hover:bg-gray-600'
+                            }`}
+                        >
+                            <input
+                                type="radio"
+                                name="payment"
+                                value="COD"
+                                checked={selectedPayment === 'COD'}
+                                onChange={() => setSelectedPayment('COD')}
+                                className="form-radio h-4 w-4 text-yellow-500 bg-gray-600 border-gray-500 focus:ring-yellow-500 transition"
+                            />
+                            <span className="ml-3">Cash on Delivery (COD)</span>
+                            {selectedPayment === 'COD' && <Check className="w-5 h-5 text-yellow-500 ml-auto" />}
+                        </label>
+
+                        {/* Option 2: Card (Unavailable) */}
+                        <label className="flex items-center text-sm text-gray-300 p-2 bg-gray-700 rounded-lg opacity-50 cursor-not-allowed">
+                            <input
+                                type="radio"
+                                name="payment"
+                                value="Card"
+                                disabled
+                                checked={selectedPayment === 'Card'} // Should always be false
+                                onChange={() => setSelectedPayment('Card')} // Won't fire, but included for completeness
+                                className="form-radio h-4 w-4 text-yellow-500 bg-gray-600 border-gray-500 focus:ring-yellow-500 transition"
+                            />
+                            <span className="ml-3">Credit/Debit Card (Unavailable)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {/* 4. Order Summary Footer - FIXED BUTTON LOGIC */}
+            <div className="p-4 bg-gray-900 border-t border-gray-800 flex-shrink-0">
+                <div className="space-y-1 text-sm mb-3">
+                    <div className="flex justify-between text-gray-400"><span>Order Total</span><span>₱{orderSummary.subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-gray-400"><span>Shipping Fee</span><span>₱{orderSummary.shipping.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-lg pt-2 border-t border-gray-700">
+                        <span className="text-white font-bold">TOTAL PAYMENT</span>
+                        <span className="text-yellow-500 font-bold">₱{orderSummary.total.toFixed(2)}</span>
+                    </div>
+                </div>
+                <button
+                    // FIX: Make the onClick handler async, await placeOrder, and navigate upon success.
+                    onClick={async () => {
+                        const success = await placeOrder(
+                            orderSummary.total, 
+                            profile.address, 
+                            selectedPayment,
+                            itemsToCheckout
+                        );
+                        // Check for successful order placement (assuming 'placeOrder' returns a truthy value on success)
+                        if (success) {
+                            onNavigate('orderHistory'); // Navigate to the OrderHistoryScreen
+                        }
+                    }}
+                    disabled={isAddressMissing || itemsToCheckout.length === 0}
+                    className={`w-full py-3 rounded-lg text-black font-bold uppercase transition duration-150 ${
+                        isAddressMissing || itemsToCheckout.length === 0 ? 'bg-red-600 cursor-not-allowed text-white' : 'bg-yellow-500 hover:bg-yellow-600'
+                    }`}
+                >
+                    {isAddressMissing ? 'ADDRESS REQUIRED' : 'PLACE ORDER'}
+                </button>
+            </div>
+        </div>
+    );
+};
+// --- EXISTING SCREENS (with minor updates) ---
+
+/**
+ * Home Screen Component 
+ */
+const HomeScreen = ({ onNavigate, cartItemCount, user }) => {
+    return (
+        <div className="flex flex-col h-full bg-black text-white">
              <NavHeader currentScreen="home" onNavigate={onNavigate} user={user} cartItemCount={cartItemCount} />
-              <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
-                  <div className="p-8 bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
-                      <Home className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                      <h1 className="text-4xl font-extrabold text-white mb-2">EVO HELMETS</h1>
-                      <p className="text-gray-400 mb-6">Your destination for premium motorcycle gear.</p>
-                      <button
-                          onClick={() => onNavigate('shop')}
-                          className="w-full py-3 px-4 rounded-lg bg-yellow-500 text-black font-bold uppercase hover:bg-yellow-600 transition duration-150"
-                      >
-                          START SHOPPING
-                      </button>
-                      <button
-                          onClick={() => onNavigate('about')}
-                          className="w-full py-3 px-4 rounded-lg bg-gray-700 text-white font-bold uppercase hover:bg-gray-600 transition duration-150 mt-3"
-                      >
-                          Learn About Us
-                      </button>
-                  </div>
-              </div>
-          </div>
-      );
-  };
-  /**
-   * About Screen Component 
-   */
+             <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                 <div className="p-8 bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
+                     <Home className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                     <h1 className="text-4xl font-extrabold text-white mb-2">EVO HELMETS</h1>
+                     <p className="text-gray-400 mb-6">Your destination for premium motorcycle gear.</p>
+                     <button
+                         onClick={() => onNavigate('shop')}
+                         className="w-full py-3 px-4 rounded-lg bg-yellow-500 text-black font-bold uppercase hover:bg-yellow-600 transition duration-150"
+                     >
+                         START SHOPPING
+                     </button>
+                     <button
+                         onClick={() => onNavigate('about')}
+                         className="w-full py-3 px-4 rounded-lg bg-gray-700 text-white font-bold uppercase hover:bg-gray-600 transition duration-150 mt-3"
+                     >
+                         Learn About Us
+                     </button>
+                 </div>
+             </div>
+        </div>
+    );
+};
+
  const AboutScreen = ({ onNavigate, cartItemCount, user }) => {
     return (
           <div className="flex flex-col h-full bg-black text-white">
@@ -1592,7 +1642,7 @@ const ProfileScreen = ({ user, onNavigate, onLogout, cartItemCount }) => {
                       product_id,
                       quantity,
                       size,
-                      products ( id, name, price, image_path )
+                      products ( id, name, price, image_path, color )
                   `)
                   .eq('user_id', userId);
 

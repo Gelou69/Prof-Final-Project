@@ -1123,12 +1123,7 @@ const HomeScreen = ({ onNavigate, cartItemCount, user }) => {
           <div className="flex flex-col h-full bg-black text-white">
              <NavHeader currentScreen="about" onNavigate={onNavigate} user={user} cartItemCount={cartItemCount} />
               <div className="flex-grow p-6 overflow-y-auto">
-                  <h1 className="text-3xl font-extrabold text-yellow-500 mb-4">Our Mission</h1>
-                  <p className="text-gray-300 mb-6">
-                      EVO Helmets is dedicated to providing riders with the highest standard of safety and style. 
-                      We believe that protection should never compromise design. Our helmets are rigorously tested 
-                      to meet global safety standards, ensuring you ride with confidence.
-                  </p>
+                 
                   
                   <h2 className="text-2xl font-bold text-white mb-3 mt-6">Contact</h2>
                   <div className="space-y-2 text-gray-300">

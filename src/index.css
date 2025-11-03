@@ -1,113 +1,341 @@
-@import "tailwindcss";
-:root {
+/*
+  Hello! I've updated your stylesheet with a more creative and aesthetic feel.
+  I've introduced CSS variables (like --primary, --bg, --text) to create a consistent
+  light/dark mode theme that's easier to manage.
 
+  I also added animations for hovering and clicking on buttons, a hover effect for images,
+  and made sure the layout elements are fully responsive.
+
+  Note: Selectors like `button.w-full.py-2...` are very specific and override
+  utility classes. For future projects, you might find it easier to use
+  Tailwind's `@apply` directive or custom class names (e.g., .btn-primary)
+  to keep your CSS cleaner!
+*/
+
+@import "tailwindcss";
+
+:root {
+  /* Font */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Dark Mode (Default) */
+  --primary: #646cff;
+  --primary-hover: #535bf2;
+  --accent: #f7b731;
+  --accent-hover: #f9d71c;
+
+  --green: #2ecc71;
+  --green-hover: #28b463;
+  --red: #e74c3c;
+  --red-hover: #c0392b;
+  --yellow: #f1c40f;
+  --yellow-hover: #f39c12;
+
+  --text: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --bg: #242424;
+  --surface: #3a3a3a;
+  --border: #4a4a4a;
+
+  /* Transitions & Shadows */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  color-scheme: light dark;
+  color: var(--text);
+  background-color: var(--bg);
+
+  transition: color var(--transition-fast), background-color var(--transition-fast);
 }
-p.text-sm.font-semibold.mb-2 {
-    font-size: 27px;
-}
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Light Mode */
+    --primary: #646cff;
+    --primary-hover: #535bf2;
+    --accent: #d90062;
+    --accent-hover: #b30051;
+
+    --green: #2ecc71;
+    --green-hover: #28b463;
+    --red: #e74c3c;
+    --red-hover: #c0392b;
+    --yellow: #f1c40f;
+    --yellow-hover: #f39c12;
+
+    --text: #213547;
+    --text-muted: #5a6a7b;
+    --bg: #ffffff;
+    --surface: #f9f9f9;
+    --border: #e0e0e0;
+  }
 }
 
 body {
   margin: 0;
-  display: flex;
+  display: grid; /* Use grid for simpler centering */
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  padding: 1.5rem; /* Mobile-first: 1.5rem on all sides */
+  box-sizing: border-box; /* Include padding in width/height */
+    background-color: var(--color-gray-900);
+  /* On desktop (768px and up):
+     - No left/right padding (0) to occupy full width horizontally.
+     - Keeps 1.5rem top/bottom padding.
+  */
+  @media (min-width: 768px) {
+    padding: 1.5rem 0; 
+  }
 }
-svg.w-6.h-6 {
-    color: black;
-}
+
+/* --- BASE STYLES --- */
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  /* Responsive font size */
+  @media (max-width: 768px) {
+    font-size: 2.5em;
+  }
 }
-button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-green-500.hover\:opacity-90 {
-    color: black;
+
+a {
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none; /* Remove default underline */
+  transition: color var(--transition-fast), transform var(--transition-fast);
 }
-.grid.grid-cols-1.sm\:grid-cols-2.gap-6 {
-    width: 690px;
+
+a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+  transform: translateY(-1px); /* Subtle lift */
 }
-img.w-full.h-40.object-cover {
-    height: 319px;
-}
+
+/* --- BASE BUTTON --- */
+/* A general style for all buttons */
 button {
-    border-radius: 8px;
-    border: 1px solid transparent;
-    padding: 0.6em 1.2em;
-    font-size: 1em;
-    font-weight: 500;
-    font-family: inherit;
-    background-color: #1a1a1a;
-    cursor: pointer;
-    transition: border-color 0.25s;
-    background-color: white;
-}
-button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-gray-800.text-white.hover\:bg-gray-700.mt-2 {
-    color: black;
-}
-button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-red-600.hover\:bg-red-700.text-white.\!mt-4 {
-    color: black;
-}
-svg.w-4.h-4 {
-    color: black;
-}
-button.text-white.bg-yellow-600.hover\:bg-yellow-700.px-3.py-1.rounded-full.text-sm.font-semibold.transition {
-    color: black;
-}
-button.w-full.py-3.px-4.rounded-lg.bg-gray-700.text-white.font-bold.uppercase.hover\:bg-gray-600.transition.duration-150.mt-3 {
-    color: black;
+  border-radius: 0.75rem; /* More rounded */
+  border: 1px solid transparent;
+  padding: 0.75em 1.5em; /* More padding */
+  font-size: 1em;
+  font-weight: 600; /* Bolder */
+  font-family: inherit;
+  background-color: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: var(--primary);
+  transform: translateY(-3px); /* Lift effect */
+  box-shadow: var(--shadow-md);
 }
+
+button:active {
+  transform: translateY(-1px) scale(0.98); /* Click effect */
+  box-shadow: var(--shadow-sm);
+}
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+  outline-offset: 2px;
 }
-button.text-sm.font-medium.uppercase.transition.text-white.hover\:text-yellow-500 {
-    color: black;
-}
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+
+
+/* --- YOUR SPECIFIC CLASSES (RE-STYLED) --- */
+
+/* Header / Nav Bar */
 .flex.justify-between.items-center.p-4.bg-black.border-b.border-gray-800.flex-shrink-0 {
-    width: 700px;
+  width: 100%;
+  max-width: 700px;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+
+  box-shadow: var(--shadow-md);
+  padding: 1rem 1.5rem;
+  /* Responsive */
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+   
+  }
 }
+
+/* "27px" text */
+p.text-sm.font-semibold.mb-2 {
+  font-size: 1.6875rem; /* 27px */
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Card Grid */
+.grid.grid-cols-1.sm\:grid-cols-2.gap-6 {
+  width: 100%;
+  max-width: 700px; /* 690px is fine, 700 is rounder */
+  gap: 1.5rem; /* 24px */
+}
+
+/* Card Image */
+img.w-full.h-40.object-cover {
+  height: 320px; /* 319px is fine */
+  object-fit: cover;
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-bounce), box-shadow var(--transition-bounce);
+
+  /* Responsive height for smaller screens */
+  @media (max-width: 640px) {
+    height: 200px;
+  }
+}
+
+img.w-full.h-40.object-cover:hover {
+  transform: scale(1.03) rotate(1deg); /* Creative hover */
+  box-shadow: var(--shadow-lg);
+}
+
+/* --- BUTTON VARIATIONS --- */
+
+/* Green Button */
+button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-green-500.hover\:opacity-90 {
+  background: linear-gradient(135deg, var(--green), var(--green-hover));
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-green-500.hover\:opacity-90:hover {
+  background: linear-gradient(135deg, var(--green-hover), var(--green));
+}
+
+/* Red Button */
 button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-red-500.hover\:opacity-90 {
-    color: black;
+  background: linear-gradient(135deg, var(--red), var(--red-hover));
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
-svg.w-6.h-6.text-white.hover\:text-yellow-500 {
-    color: white;
+button.w-full.py-2.px-4.rounded-lg.text-white.font-semibold.transition.duration-200.bg-red-500.hover\:opacity-90:hover {
+  background: linear-gradient(135deg, var(--red-hover), var(--red));
 }
+
+/* Gray/Surface Button */
+button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-gray-800.text-white.hover\:bg-gray-700.mt-2 {
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-gray-800.text-white.hover\:bg-gray-700.mt-2:hover {
+  background-color: var(--bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Another Red Button */
+button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-red-600.hover\:bg-red-700.text-white.\!mt-4 {
+  background: linear-gradient(135deg, var(--red), var(--red-hover));
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+button.w-full.py-3.px-4.rounded-lg.text-black.font-bold.uppercase.transition.duration-150.shadow-md.bg-red-600.hover\:bg-red-700.text-white.\!mt-4:hover {
+  background: linear-gradient(135deg, var(--red-hover), var(--red));
+}
+
+
+/* Yellow "Pill" Button */
+button.text-white.bg-yellow-600.hover\:bg-yellow-700.px-3.py-1.rounded-full.text-sm.font-semibold.transition {
+  background: linear-gradient(135deg, var(--yellow), var(--yellow-hover));
+  color: #333; /* Darker text for yellow */
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.5em 1.25em;
+  font-size: 0.875rem;
+}
+button.text-white.bg-yellow-600.hover\:bg-yellow-700.px-3.py-1.rounded-full.text-sm.font-semibold.transition:hover {
+  background: linear-gradient(135deg, var(--yellow-hover), var(--yellow));
+}
+
+/* Another Gray Button */
+button.w-full.py-3.px-4.rounded-lg.bg-gray-700.text-white.font-bold.uppercase.hover\:bg-gray-600.transition.duration-150.mt-3 {
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+button.w-full.py-3.px-4.rounded-lg.bg-gray-700.text-white.font-bold.uppercase.hover\:bg-gray-600.transition.duration-150.mt-3:hover {
+  background-color: var(--bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Plain "Link" Button */
+button.text-sm.font-medium.uppercase.transition.text-white.hover\:text-yellow-500 {
+  background: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+}
+button.text-sm.font-medium.uppercase.transition.text-white.hover\:text-yellow-500:hover {
+  background: transparent;
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+/* Gray "Pill" Button */
 button.inline-flex.items-center.px-4.py-2.border.text-sm.font-medium.rounded-full.mr-2.transition.duration-150.ease-in-out.bg-gray-800.text-white.border-gray-700.hover\:bg-gray-700 {
-    color: black;
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5em 1.25em;
+}
+button.inline-flex.items-center.px-4.py-2.border.text-sm.font-medium.rounded-full.mr-2.transition.duration-150.ease-in-out.bg-gray-800.text-white.border-gray-700.hover\:bg-gray-700:hover {
+  background-color: var(--bg);
+  border-color: var(--text);
+}
+
+
+/* --- ICONS --- */
+
+/* Base Icon */
+svg.w-6.h-6 {
+  color: var(--text);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+/* Icon in Header */
+svg.w-6.h-6.text-white.hover\:text-yellow-500 {
+  color: var(--text);
+}
+svg.w-6.h-6.text-white.hover\:text-yellow-500:hover {
+  color: var(--accent);
+  transform: scale(1.1); /* Pop effect */
+}
+
+/* Small Icon */
+svg.w-4.h-4 {
+  color: var(--text);
+}
+.flex.flex-col.h-full.bg-black.text-white {
+    width: 697px;
 }
